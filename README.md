@@ -114,3 +114,6 @@ The following is an example for the `custom.json` that you created earlier
   ]
 }
 ```
+## 📜 Credits
+
+Icon by [Flaticon](https://www.flaticon.com/)
