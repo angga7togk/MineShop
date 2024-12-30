@@ -25,12 +25,34 @@ class MineCommand extends Command
       $sender->sendMessage(MineShop::$PREFIX . TextFormat::RED . 'Please use this command in-game!');
       return;
     }
-    if (isset($args[0]) && ($sender->hasPermission('mineshop.command.sell') || $sender->hasPermission(DefaultPermissions::ROOT_OPERATOR))) {
-      if($sender->getInventory()->getItemInHand()->isNull()){
-        $sender->sendMessage(MineShop::$PREFIX . TextFormat::RED . 'Please hold item in your hand!');
-        return;
+    if (isset($args[0])) {
+      switch (strtolower($args[0])) {
+        case 'sell':
+        case 'set':
+        case 'add':
+          if ($sender->getInventory()->getItemInHand()->isNull()) {
+            $sender->sendMessage(MineShop::$PREFIX . TextFormat::RED . 'Please hold item in your hand!');
+            return;
+          }
+          if ($sender->hasPermission('mineshop.command.sell') || $sender->hasPermission(DefaultPermissions::ROOT_OPERATOR)) {
+            (new MineMenu($this->plugin))->sellMenu($sender);
+            return;
+          }
+          break;
+        case 'unsell':
+        case 'remove':
+        case 'delete':
+          if ($sender->hasPermission('mineshop.command.unsell') || $sender->hasPermission(DefaultPermissions::ROOT_OPERATOR)) {
+            (new MineMenu($this->plugin))->open($sender, true);
+            return;
+          }
+          break;
+        default:
+          if ($sender->hasPermission('mineshop.command.sell') || $sender->hasPermission('mineshop.command.unsell') || $sender->hasPermission(DefaultPermissions::ROOT_OPERATOR)) {
+            $sender->sendMessage(MineShop::$PREFIX . TextFormat::RED . 'Usage: /mineshop <sell|unsell>');
+          }
+          break;
       }
-      (new MineMenu($this->plugin))->sellMenu($sender);
     } else {
       (new MineMenu($this->plugin))->open($sender);
     }

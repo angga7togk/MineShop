@@ -3,8 +3,7 @@
 namespace angga7togk\mineshop\ui;
 
 use angga7togk\mineshop\MineShop;
-use pocketmine\data\bedrock\EnchantmentIdMap;
-use pocketmine\item\enchantment\EnchantmentInstance;
+use angga7togk\mineshop\model\ItemShop;
 use pocketmine\item\Item;
 use pocketmine\item\StringToItemParser;
 use pocketmine\item\VanillaItems;
@@ -24,9 +23,9 @@ class MenuButton
 
   public static function getInfoButton(Player $player): Item
   {
-    $lore = [TextFormat::GRAY . 'Hi: ' . TextFormat::GOLD . $player->getName()];
-    foreach (MineShop::getInstance()->getEconomy()->getPlayerEconomies($player) as $item => $count) {
-      $lore[] = TextFormat::GRAY . $item->getName() . TextFormat::GOLD . ' x' . $count;
+    $lore = [TextFormat::GRAY . 'Hi ' . TextFormat::GOLD . $player->getName()];
+    foreach (MineShop::getInstance()->getEconomyManager()->getOres($player) as $typeId => $oreEco) {
+      $lore[] = TextFormat::GRAY . $oreEco->getItem()->getName() . TextFormat::GOLD . ' x' . $oreEco->getAmount();
     }
     return VanillaItems::BOOK()
       ->setNamedTag((new CompoundTag)->setString('mineshop', 'info'))
@@ -42,20 +41,24 @@ class MenuButton
   }
 
 
-  /**
-   * @param array{
-   *     item: Item,
-   *     prices: array<string, int>
-   * } $itemSelling
-   */
-  public static function getItemButton(int $index, array $itemSelling): Item
+
+  public static function getItemButton(int $index, ItemShop $itemShop, bool $unsellMode = false): Item
   {
-    $lore = [TextFormat::WHITE . 'Needs:'];
-    foreach ($itemSelling['prices'] as $itemNamesId => $price) {
-      $lore[] = ' ' . TextFormat::GRAY . StringToItemParser::getInstance()->parse($itemNamesId)->getName() . TextFormat::GOLD . ' x' . $price;
+    $item = $itemShop->getItem();
+    if ($item->hasNamedTag()) {
+      $item->getNamedTag()->setString('mineshop', 'selling')->setInt('mineshop_index', $index);
+    } else {
+      $item->setNamedTag((new CompoundTag)->setString('mineshop', 'selling')->setInt('mineshop_index', $index));
     }
-    return $itemSelling['item']
-      ->setNamedTag((new CompoundTag)->setString('mineshop', 'selling')->setInt('mineshop_index', $index))
-      ->setLore($lore);
+    $lore = [''];
+    if ($unsellMode) {
+      $lore[] = TextFormat::RED . 'click to unsell the item!';
+    } else {
+      $lore[] = TextFormat::YELLOW . 'Need Ores:';
+      foreach ($itemShop->getPrices() as $oreEco) {
+        $lore[] = ' ' . TextFormat::GRAY . $oreEco->getItem()->getName() . TextFormat::GOLD . ' x' . $oreEco->getAmount();
+      }
+    }
+    return $item->setLore($lore);
   }
 }

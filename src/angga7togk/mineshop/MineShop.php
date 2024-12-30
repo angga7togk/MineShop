@@ -3,38 +3,52 @@
 namespace angga7togk\mineshop;
 
 use angga7togk\mineshop\command\MineCommand;
-use angga7togk\mineshop\economy\MineEconomy;
+use angga7togk\mineshop\manager\EconomyManager;
+use angga7togk\mineshop\manager\ShopManager;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\item\Item;
+use pocketmine\item\StringToItemParser;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Config;
-use pocketmine\world\format\io\GlobalItemDataHandlers;
+use pocketmine\utils\TextFormat;
 
 class MineShop extends PluginBase
 {
+  private array $economies = [];
   private array $guiSchema;
-  private Config $shop;
-  private MineEconomy $economy;
+
+  private EconomyManager $economyManager;
+  private ShopManager $shopManager;
 
   private static MineShop $instance;
+
   public static string $PREFIX;
 
-  public function onLoad(): void {
+
+  public function onLoad(): void
+  {
     self::$instance = $this;
   }
 
   public function onEnable(): void
   {
     $this->saveDefaultConfig();
-    $this->saveResource('shop.yml');
-    $this->shop = new Config($this->getDataFolder() . 'shop.yml', Config::YAML, []);
-    self::$PREFIX = $this->getConfig()->get('prefix');
+    $cfg = $this->getConfig();
+    self::$PREFIX = TextFormat::colorize($cfg->get('prefix')) . " " . TextFormat::RESET;
 
     // Register GUI Schema
-    $this->saveResource("gui/{$this->getConfig()->get('gui-schema', 'default')}.json");
-    $this->guiSchema = (new Config($this->getDataFolder() . "gui/{$this->shop->get('gui-schema', 'default')}.json", Config::JSON))->getAll();
+    $this->saveResource("gui/{$cfg->get('gui-schema', 'default')}.json");
+    $this->guiSchema = (new Config($this->getDataFolder() . "gui/{$cfg->get('gui-schema', 'default')}.json", Config::JSON))->getAll();
 
-    $this->economy = new MineEconomy($this);
+
+    // Register Economie Ores
+    foreach ($cfg->get('economies', []) as $itemName) {
+      $itemEconomy = StringToItemParser::getInstance()->parse($itemName);
+      $this->economies[$itemEconomy->getTypeId()] = $itemEconomy;
+    }
+
+    $this->economyManager = new EconomyManager($this);
+    $this->shopManager = new ShopManager($this);
 
     // Register InvMenu
     if (!InvMenuHandler::isRegistered()) {
@@ -44,54 +58,12 @@ class MineShop extends PluginBase
     $this->getServer()->getCommandMap()->register('mineshop', new MineCommand($this));
   }
 
-
-  /**
-   * @return array<int, array{
-   *     item: Item,
-   *     prices: array<string, int>
-   * }>
-   */
-  public function getShop(): array
-  {
-    $shops = $this->shop->getAll();
-    $formattedShops = [];
-
-    foreach ($shops as $shop) {
-      $formattedShops[] = [
-        'item' => Item::legacyJsonDeserialize($shop['item']),
-        'prices' => $shop['prices'],
-      ];
-    }
-
-    return $formattedShops;
-  }
-
-
-
-  /** @param array<string, int> $price */
-  public function sellItem(Item $item, array $prices): void
-  {
-    $itemArray = $item->jsonSerialize();
-    $shops = $this->shop->getAll();
-    $shops[] = ['item' => $itemArray, 'prices' => $prices];
-    $this->shop->setAll($shops);
-    $this->shop->save();
-  }
-
-  public function unsellItem(int $shopIndex): void
-  {
-    $shops = $this->shop->getAll();
-    if (isset($shops[$shopIndex])) {
-      unset($shops[$shopIndex]);
-      $this->shop->setAll($shops);
-      $this->shop->save();
-    }
-  }
-
-  /** @return string[] */
+  /** @return array<int, Item>
+   *  example: array<itemTypeId, Item>
+   * */
   public function getEconomies(): array
   {
-    return $this->getConfig()->get('economies', []);
+    return $this->economies;
   }
 
   public function getGUISchema(): array
@@ -99,9 +71,14 @@ class MineShop extends PluginBase
     return $this->guiSchema;
   }
 
-  public function getEconomy(): MineEconomy
+  public function getShopManager(): ShopManager
   {
-    return $this->economy;
+    return $this->shopManager;
+  }
+
+  public function getEconomyManager(): EconomyManager
+  {
+    return $this->economyManager;
   }
 
   public static function getInstance(): MineShop

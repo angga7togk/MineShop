@@ -9,3 +9,9 @@ permissions:
   mineshop.command:
     default: true
     description: Allows to use /mineshop command
+  mineshop.command.sell:
+    default: op
+    description: Allows to use /mineshop sell command
+  mineshop.command.unsell:
+    default: op
+    description: Allows to use /mineshop unsell command
