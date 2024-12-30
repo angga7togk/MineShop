@@ -12,7 +12,4 @@ projects:
       - src: jojoe77777/FormAPI/libFormAPI
         branch: master
         version: ^2.1.1
-      - src: kim/present/utils/itemserialize/item-serialize-utils
-        branch: main
-        version: ^2.0.0
 ...
