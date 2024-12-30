@@ -9,10 +9,10 @@ projects:
       - src: muqsit/InvMenu/InvMenu
         branch: pm5
         version: ^4.5.3
-      - src: jojoe77777/FormAPI/FormAPI
+      - src: jojoe77777/FormAPI/libFormAPI
         branch: master
         version: ^2.1.1
-      - src: kim/present/utils/itemserialize
+      - src: kim/present/utils/itemserialize/item-serialize-utils
         branch: main
         version: ^2.0.0
 ...
