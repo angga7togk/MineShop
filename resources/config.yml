@@ -1,0 +1,12 @@
+prefix: '&7[&aMineShop&7]'
+
+# you can create new gui schema in folder gui/
+gui-schema: 'default' # input filename without extension
+
+# Ore economy supported
+economies:
+  - 'minecraft:emerald'
+  - 'minecraft:diamond'
+  - 'minecraft:gold_ingot'
+
+config-version: 1.0

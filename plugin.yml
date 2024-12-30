@@ -1,0 +1,11 @@
+name: MineShop
+main: angga7togk\mineshop\MineShop
+api: 5.0.0
+author: Angga7togk
+version: 1.0.0
+description: Shop with Ore Economy
+
+permissions:
+  mineshop.command:
+    default: true
+    description: Allows to use /mineshop command

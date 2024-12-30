@@ -1,0 +1,4 @@
+- item: "item_json"
+  prices:
+    diamond: 1
+    emerald: 2
