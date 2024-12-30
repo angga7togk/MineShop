@@ -202,7 +202,6 @@ class MineMenu
     $form->addLabel('Set the ore price to 0 if you dont sell the ore!');
     foreach ($economies as $itemTypeId) {
       $item = $this->plugin->getEconomies()[$itemTypeId];
-      if ($item === null) continue;
       $form->addInput('Price ' . $item->getName(), 'amount price', '0');
     }
     $player->sendForm($form);
