@@ -4,6 +4,7 @@ api: 5.0.0
 author: Angga7togk
 version: 1.0.0
 description: Shop with Ore Economy
+virions: ["InvMenu", "libFormAPI"]
 
 permissions:
   mineshop.command:
