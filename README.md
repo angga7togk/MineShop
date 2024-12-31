@@ -2,8 +2,10 @@
 
 MineShop plugin for Pocketmine, this plugin functions to sell rare items in MineShop, and can be purchased with ore
 
+**Custom Ore Economies:**
+You can freely add economy by ore in MineShop<br>
 **SellItems Tutorial:**
-Just hold items in your hand and then run the command `/mineshop sell` to sell them.
+Just hold items in your hand and then run the command `/mineshop sell` to sell them.<br>
 
 ## ✈️ Commands
 
@@ -12,6 +14,23 @@ Just hold items in your hand and then run the command `/mineshop sell` to sell t
 | `/mineshop`        | Open MineShop GUI | `mineshop.command`             |
 | `/mineshop sell`   | Open Sell UI      | `mineshop.command.sell` (OP)   |
 | `/mineshop unsell` | Open Unsell GUI   | `mineshop.command.unsell` (OP) |
+
+## ⚙️ Config
+custom your config.yml
+```yaml
+prefix: '&7[&aMineShop&7]'
+
+# you can create new gui schema in folder gui/
+gui-schema: 'default' # input filename without extension
+
+# Ore economy supported
+economies:
+  - 'minecraft:emerald'
+  - 'minecraft:diamond'
+  - 'minecraft:gold_ingot'
+
+config-version: 1.0
+```
 
 ## 🖼️ Preview
 
