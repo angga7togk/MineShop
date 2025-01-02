@@ -6,8 +6,9 @@ projects:
   MineShop:
     path: ""
     libs:
-      - src: muqsit/invmenu/InvMenu
-        branch: pm5
+      - src: Muqsit/InvMenu/Invmenu
+        branch: "pm5"
+        version: ^4.6.5
       - src: jojoe77777/FormAPI/libFormAPI
         branch: master
         version: ^2.1.1
