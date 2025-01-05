@@ -5,7 +5,6 @@ namespace angga7togk\mineshop\ui;
 use angga7togk\mineshop\MineShop;
 use angga7togk\mineshop\model\ItemShop;
 use pocketmine\item\Item;
-use pocketmine\item\StringToItemParser;
 use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;

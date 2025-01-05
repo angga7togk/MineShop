@@ -9,25 +9,26 @@ use muqsit\invmenu\InvMenuHandler;
 use pocketmine\item\Item;
 use pocketmine\item\StringToItemParser;
 use pocketmine\plugin\PluginBase;
+use pocketmine\plugin\PluginOwnedTrait;
 use pocketmine\utils\Config;
+use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\TextFormat;
 
 class MineShop extends PluginBase
 {
+  use SingletonTrait;
+
   private array $economies = [];
   private array $guiSchema;
 
   private EconomyManager $economyManager;
   private ShopManager $shopManager;
 
-  private static MineShop $instance;
-
   public static string $PREFIX;
-
 
   public function onLoad(): void
   {
-    self::$instance = $this;
+    self::setInstance($this);
   }
 
   public function onEnable(): void
@@ -79,10 +80,5 @@ class MineShop extends PluginBase
   public function getEconomyManager(): EconomyManager
   {
     return $this->economyManager;
-  }
-
-  public static function getInstance(): MineShop
-  {
-    return self::$instance;
   }
 }
