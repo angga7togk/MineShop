@@ -52,7 +52,6 @@ class ShopManager
       if ($price->getAmount() > 0) $__prices[$price->getItem()->getTypeId()] = $price->getAmount();
     }
 
-    Server::getInstance()->getLogger()->info(strval($index));
     $shops = $this->shop->getAll();
     if ($index !== false) {
       $shops[$index] = [

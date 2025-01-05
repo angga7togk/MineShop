@@ -176,6 +176,7 @@ class MineMenu
   public function sellMenu(Player $player, int|false $index = false): void
   {
     $economies = array_keys($this->plugin->getEconomies());
+    $shops = $this->plugin->getShopManager()->getShop();
 
     $form = new CustomForm(function (Player $player, ?array $data) use ($economies, $index) {
       if ($data === null) return;
@@ -218,13 +219,12 @@ class MineMenu
     });
     $form->setTitle(TextFormat::BOLD . $index === false ? 'MineShop [Selling]' : 'MineShop [Editing]');
     $form->addLabel('Set the ore price to 0 if you dont sell the ore!');
-    $shop = $index === false ? null : $this->plugin->getShopManager()->getShop()[$index];
     $_i = 0;
     foreach ($economies as $itemTypeId) {
       $item = $this->plugin->getEconomies()[$itemTypeId];
 
-      $price = $shop !== null && isset($shop->getPrices()[$_i]) ?
-        strval($shop->getPrices()[$_i]->getAmount()) :
+      $price = $index !== false && isset($shops[$index]) && isset($shops[$index]->getPrices()[$_i]) ?
+        strval($shops[$index]->getPrices()[$_i]->getAmount()) :
         '0';
 
       $form->addInput('Price ' . $item->getName(), 'amount price', $price);
