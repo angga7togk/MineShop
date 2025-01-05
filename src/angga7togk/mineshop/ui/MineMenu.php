@@ -14,16 +14,22 @@ use pocketmine\utils\TextFormat;
 
 class MineMenu
 {
-  public function __construct(private readonly MineShop $plugin) {}
+  public function __construct(private MineShop $plugin) {}
 
-  public function open(Player $player, bool $unsellMode = false, int $page = 1): void
+  public function open(Player $player, MenuMode $mode = MenuMode::NORMAL, int $page = 1): void
   {
     $schema = $this->plugin->getGUISchema();
     $shops = $this->plugin->getShopManager()->getShop();
 
     $menu = InvMenu::create($schema['type'] === 'CHEST' ? InvMenu::TYPE_CHEST : InvMenu::TYPE_DOUBLE_CHEST);
-    $menu->setName($unsellMode ? TextFormat::BOLD . TextFormat::RED . 'Unsell Mode' : TextFormat::colorize($schema['name']));
     $maxSlotForItemSell = $schema['max_slot'];
+
+    $menuName = match ($mode) {
+      MenuMode::DELETING => TextFormat::BOLD . TextFormat::RED . 'Delete Mode',
+      MenuMode::EDITING => TextFormat::BOLD . TextFormat::GREEN . 'Edit Mode',
+      default => TextFormat::colorize($schema['name']),
+    };
+    $menu->setName($menuName);
 
     $totalItems = count($shops);
     $maxPage = (int)ceil($totalItems / $maxSlotForItemSell);
@@ -45,7 +51,7 @@ class MineMenu
           switch ($value) {
             case 'slot':
               if ($i_shop < $endIndex) {
-                $menu->getInventory()->setItem($i, MenuButton::getItemButton($i_shop, $shops[$i_shop], $unsellMode));
+                $menu->getInventory()->setItem($i, MenuButton::getItemButton($i_shop, $shops[$i_shop], $mode));
                 $i_shop++;
               }
               break;
@@ -65,7 +71,7 @@ class MineMenu
     }
 
     // Menu Listener
-    $menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($page, $maxPage, $unsellMode): void {
+    $menu->setListener(InvMenu::readonly(function (DeterministicInvMenuTransaction $transaction) use ($page, $maxPage, $mode): void {
       $p = $transaction->getPlayer();
       $item = $transaction->getItemClicked();
       if ($item->getNamedTag()->getTag('mineshop') === null) {
@@ -76,20 +82,22 @@ class MineMenu
       switch ($type) {
         case 'selling':
           $p->removeCurrentWindow();
-          $transaction->then(function (Player $player) use ($item, $unsellMode): void {
+          $transaction->then(function (Player $player) use ($item, $mode): void {
             $itemIndex = $item->getNamedTag()->getInt('mineshop_index');
-            if($unsellMode){
-              $this->askUnsellMenu($player, $itemIndex);
-            }else{
+            if ($mode === MenuMode::DELETING) {
+              $this->askDeleteMenu($player, $itemIndex);
+            } else if ($mode === MenuMode::EDITING) {
+              $this->sellMenu($player, $itemIndex);
+            } else {
               $this->askBuyMenu($player, $itemIndex);
             }
           });
           break;
         case 'previous':
-          if ($page > 1) $this->open($p, $unsellMode, $page - 1);
+          if ($page > 1) $this->open($p, $mode, $page - 1);
           break;
         case 'next':
-          if ($page < $maxPage) $this->open($p, $unsellMode, $page + 1);
+          if ($page < $maxPage) $this->open($p, $mode, $page + 1);
           break;
       }
     }));
@@ -97,16 +105,17 @@ class MineMenu
     $menu->send($player);
   }
 
-  private function askUnsellMenu(Player $player, int $index): void{
+  private function askDeleteMenu(Player $player, int $index): void
+  {
     $form = new ModalForm(function (Player $player, ?bool $data) use ($index): void {
-      if($data === null) return;
+      if ($data === null) return;
       if ($data) {
         $this->plugin->getShopManager()->unsellItem($index);
         $player->sendMessage(MineShop::$PREFIX . TextFormat::RED . 'Successfully removed item from shop.');
       }
     });
 
-    $form->setTitle(TextFormat::BOLD . 'MineShop [Unsell]');
+    $form->setTitle(TextFormat::BOLD . 'MineShop [Deleting]');
     $form->setContent('Are you sure you want to remove this item from shop?');
     $form->setButton1('Yes');
     $form->setButton2('No');
@@ -118,8 +127,7 @@ class MineMenu
     $shop = $this->plugin->getShopManager()->getShop()[$index];
     $playerOres = $this->plugin->getEconomyManager()->getOres($player);
 
-    $form = new ModalForm(function (Player $player, ?bool $data) use ($shop, $playerOres) {
-      if($data === null) return;
+    $form = new ModalForm(function (Player $player, bool $data) use ($shop, $playerOres) {
       if ($data) {
         /** @var OreEconomy[] $reduceTask */
         $reduceTask = [];
@@ -162,14 +170,17 @@ class MineMenu
     $player->sendForm($form);
   }
 
-  public function sellMenu(Player $player): void
+  /**
+   * input index if you want to edit item
+   */
+  public function sellMenu(Player $player, int|false $index = false): void
   {
     $economies = array_keys($this->plugin->getEconomies());
 
-    $form = new CustomForm(function (Player $player, ?array $data) use ($economies) {
+    $form = new CustomForm(function (Player $player, ?array $data) use ($economies, $index) {
       if ($data === null) return;
 
-      $item = $player->getInventory()->getItemInHand();
+      $item = $index === false ? $player->getInventory()->getItemInHand() : $this->plugin->getShopManager()->getShop()[$index]->getItem();
       if ($item->isNull()) {
         $player->sendMessage(MineShop::$PREFIX . TextFormat::RED . 'Please hold item in your hand!');
         return;
@@ -178,11 +189,15 @@ class MineMenu
       /** @var OreEconomy[] $prices */
       $prices = [];
       for ($i = 0; $i < count($economies); $i++) {
+
+        if (!isset(($data[$i + 1]))) continue;
+
         $itemTypeId = $economies[$i];
         if (!is_numeric($data[$i + 1])) {
           $player->sendMessage(MineShop::$PREFIX . TextFormat::RED . 'The price of ore must be a number!');
           return;
         }
+
         $itemPrice = (int) $data[$i + 1];
 
         if ($itemPrice > 0) {
@@ -194,14 +209,26 @@ class MineMenu
         return;
       }
 
-      $this->plugin->getShopManager()->sellItem($item, $prices);
-      $player->sendMessage(MineShop::$PREFIX . TextFormat::GREEN . 'Successfully selling ' . $item->getName() . '.');
+      $this->plugin->getShopManager()->sellItem($item, $prices, $index);
+      if ($index !== false) {
+        $player->sendMessage(MineShop::$PREFIX . TextFormat::GREEN . 'Successfully editing ' . $item->getName() . '.');
+      } else {
+        $player->sendMessage(MineShop::$PREFIX . TextFormat::GREEN . 'Successfully selling ' . $item->getName() . '.');
+      }
     });
-    $form->setTitle(TextFormat::BOLD . 'MineShop [Sell]');
+    $form->setTitle(TextFormat::BOLD . $index === false ? 'MineShop [Selling]' : 'MineShop [Editing]');
     $form->addLabel('Set the ore price to 0 if you dont sell the ore!');
+    $shop = $index === false ? null : $this->plugin->getShopManager()->getShop()[$index];
+    $_i = 0;
     foreach ($economies as $itemTypeId) {
       $item = $this->plugin->getEconomies()[$itemTypeId];
-      $form->addInput('Price ' . $item->getName(), 'amount price', '0');
+
+      $price = $shop !== null && isset($shop->getPrices()[$_i]) ?
+        strval($shop->getPrices()[$_i]->getAmount()) :
+        '0';
+
+      $form->addInput('Price ' . $item->getName(), 'amount price', $price);
+      $_i++;
     }
     $player->sendForm($form);
   }

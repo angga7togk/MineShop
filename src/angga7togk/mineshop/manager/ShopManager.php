@@ -7,9 +7,7 @@ use angga7togk\mineshop\model\ItemShop;
 use angga7togk\mineshop\model\OreEconomy;
 use angga7togk\mineshop\utils\Utils;
 use pocketmine\item\Item;
-use pocketmine\item\ItemTypeIds;
-use pocketmine\item\StringToItemParser;
-use pocketmine\item\VanillaItems;
+use pocketmine\Server;
 use pocketmine\utils\Config;
 
 class ShopManager
@@ -34,7 +32,7 @@ class ShopManager
     foreach ($shops as $shop) {
       $prices = [];
       foreach ($shop['prices'] as $itemTypeId => $price) {
-        if(isset($this->plugin->getEconomies()[$itemTypeId])){
+        if (isset($this->plugin->getEconomies()[$itemTypeId])) {
           $prices[] = new OreEconomy($this->plugin->getEconomies()[$itemTypeId], $price);
         }
       }
@@ -44,27 +42,42 @@ class ShopManager
   }
 
 
-  /** @param OreEconomy[] $prices */
-  public function sellItem(Item $item, array $prices): void
-  { 
+  /** @param OreEconomy[] $prices 
+   * @param int|false $index if you want to edit item
+   */
+  public function sellItem(Item $item, array $prices, int|false $index = false): void
+  {
     $__prices = [];
     foreach ($prices as $price) {
       if ($price->getAmount() > 0) $__prices[$price->getItem()->getTypeId()] = $price->getAmount();
     }
 
+    Server::getInstance()->getLogger()->info(strval($index));
     $shops = $this->shop->getAll();
-    $shops[] = ['item' => Utils::serializeItem($item), 'prices' => $__prices];
+    if ($index !== false) {
+      $shops[$index] = [
+        'item' => Utils::serializeItem($item),
+        'prices' => $__prices
+      ];
+    } else {
+      $shops[] = [
+        'item' => Utils::serializeItem($item),
+        'prices' => $__prices
+      ];
+    }
     $this->shop->setAll($shops);
     $this->shop->save();
   }
 
   public function unsellItem(int $shopIndex): void
-  {
+{
     $shops = $this->shop->getAll();
     if (isset($shops[$shopIndex])) {
-      unset($shops[$shopIndex]);
-      $this->shop->setAll($shops);
-      $this->shop->save();
+        unset($shops[$shopIndex]);
+        $shops = array_values($shops); 
+        $this->shop->setAll($shops);
+        $this->shop->save();
     }
-  }
+}
+
 }

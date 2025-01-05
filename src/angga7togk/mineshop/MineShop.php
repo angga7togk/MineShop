@@ -9,7 +9,6 @@ use muqsit\invmenu\InvMenuHandler;
 use pocketmine\item\Item;
 use pocketmine\item\StringToItemParser;
 use pocketmine\plugin\PluginBase;
-use pocketmine\plugin\PluginOwnedTrait;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\TextFormat;

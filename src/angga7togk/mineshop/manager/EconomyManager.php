@@ -4,7 +4,6 @@ namespace angga7togk\mineshop\manager;
 
 use angga7togk\mineshop\MineShop;
 use angga7togk\mineshop\model\OreEconomy;
-use pocketmine\item\Item;
 use pocketmine\player\Player;
 
 class EconomyManager

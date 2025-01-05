@@ -16,3 +16,6 @@ permissions:
   mineshop.command.delete:
     default: op
     description: Allows to use /mineshop delete command
+  mineshop.command.edit:
+    default: op
+    description: Allows to use /mineshop edit command

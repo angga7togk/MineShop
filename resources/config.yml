@@ -7,6 +7,10 @@ gui-schema: 'default' # input filename without extension
 economies:
   - 'minecraft:emerald'
   - 'minecraft:diamond'
-  - 'minecraft:gold_ingot'
+  - 'minecraft:raw_gold'
+  - 'minecraft:raw_iron'
+  - 'minecraft:coal'
+  - 'minecraft:lapis_lazuli'
+  - 'minecraft:nether_quartz'
 
 config-version: 1.0

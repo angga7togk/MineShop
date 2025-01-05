@@ -41,7 +41,7 @@ class MenuButton
 
 
 
-  public static function getItemButton(int $index, ItemShop $itemShop, bool $unsellMode = false): Item
+  public static function getItemButton(int $index, ItemShop $itemShop, MenuMode $mode = MenuMode::NORMAL): Item
   {
     $item = $itemShop->getItem();
     if ($item->hasNamedTag()) {
@@ -50,8 +50,10 @@ class MenuButton
       $item->setNamedTag((new CompoundTag)->setString('mineshop', 'selling')->setInt('mineshop_index', $index));
     }
     $lore = [''];
-    if ($unsellMode) {
-      $lore[] = TextFormat::RED . 'click to unsell the item!';
+    if ($mode === MenuMode::DELETING) {
+      $lore[] = TextFormat::RED . 'click to delete the item!';
+    } else if ($mode === MenuMode::EDITING) {
+      $lore[] = TextFormat::GREEN . 'click to edit the item price';
     } else {
       $lore[] = TextFormat::YELLOW . 'Need Ores:';
       foreach ($itemShop->getPrices() as $oreEco) {
