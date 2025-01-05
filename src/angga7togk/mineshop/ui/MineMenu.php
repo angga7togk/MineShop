@@ -173,7 +173,7 @@ class MineMenu
   /**
    * input index if you want to edit item
    */
-  public function sellMenu(Player $player, int|false $index = false): void
+  public function sellMenu(Player $player, ?int $index = null): void
   {
     $economies = array_keys($this->plugin->getEconomies());
     $shops = $this->plugin->getShopManager()->getShop();
@@ -181,7 +181,7 @@ class MineMenu
     $form = new CustomForm(function (Player $player, ?array $data) use ($economies, $index) {
       if ($data === null) return;
 
-      $item = $index === false ? $player->getInventory()->getItemInHand() : $this->plugin->getShopManager()->getShop()[$index]->getItem();
+      $item = $index === null ? $player->getInventory()->getItemInHand() : $this->plugin->getShopManager()->getShop()[$index]->getItem();
       if ($item->isNull()) {
         $player->sendMessage(MineShop::$PREFIX . TextFormat::RED . 'Please hold item in your hand!');
         return;
@@ -217,13 +217,13 @@ class MineMenu
         $player->sendMessage(MineShop::$PREFIX . TextFormat::GREEN . 'Successfully selling ' . $item->getName() . '.');
       }
     });
-    $form->setTitle(TextFormat::BOLD . $index === false ? 'MineShop [Selling]' : 'MineShop [Editing]');
+    $form->setTitle(TextFormat::BOLD . $index === null ? 'MineShop [Selling]' : 'MineShop [Editing]');
     $form->addLabel('Set the ore price to 0 if you dont sell the ore!');
     $_i = 0;
     foreach ($economies as $itemTypeId) {
       $item = $this->plugin->getEconomies()[$itemTypeId];
 
-      $price = $index !== false && isset($shops[$index]) && isset($shops[$index]->getPrices()[$_i]) ?
+      $price = $index !== null && isset($shops[$index]) && isset($shops[$index]->getPrices()[$_i]) ?
         strval($shops[$index]->getPrices()[$_i]->getAmount()) :
         '0';
 

@@ -45,7 +45,7 @@ class ShopManager
   /** @param OreEconomy[] $prices 
    * @param int|false $index if you want to edit item
    */
-  public function sellItem(Item $item, array $prices, int|false $index = false): void
+  public function sellItem(Item $item, array $prices, ?int $index = null): void
   {
     $__prices = [];
     foreach ($prices as $price) {
@@ -53,7 +53,7 @@ class ShopManager
     }
 
     $shops = $this->shop->getAll();
-    if ($index !== false) {
+    if ($index !== null) {
       $shops[$index] = [
         'item' => Utils::serializeItem($item),
         'prices' => $__prices
