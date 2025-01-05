@@ -211,13 +211,13 @@ class MineMenu
       }
 
       $this->plugin->getShopManager()->sellItem($item, $prices, $index);
-      if ($index !== false) {
+      if ($index !== null) {
         $player->sendMessage(MineShop::$PREFIX . TextFormat::GREEN . 'Successfully editing ' . $item->getName() . '.');
       } else {
         $player->sendMessage(MineShop::$PREFIX . TextFormat::GREEN . 'Successfully selling ' . $item->getName() . '.');
       }
     });
-    $form->setTitle(TextFormat::BOLD . $index === null ? 'MineShop [Selling]' : 'MineShop [Editing]');
+    $form->setTitle(TextFormat::BOLD . ($index === null ? 'MineShop [Selling]' : 'MineShop [Editing]'));
     $form->addLabel('Set the ore price to 0 if you dont sell the ore!');
     $_i = 0;
     foreach ($economies as $itemTypeId) {

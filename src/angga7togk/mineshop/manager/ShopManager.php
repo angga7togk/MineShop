@@ -43,7 +43,6 @@ class ShopManager
 
 
   /** @param OreEconomy[] $prices 
-   * @param int|false $index if you want to edit item
    */
   public function sellItem(Item $item, array $prices, ?int $index = null): void
   {
@@ -69,14 +68,13 @@ class ShopManager
   }
 
   public function unsellItem(int $shopIndex): void
-{
+  {
     $shops = $this->shop->getAll();
     if (isset($shops[$shopIndex])) {
-        unset($shops[$shopIndex]);
-        $shops = array_values($shops); 
-        $this->shop->setAll($shops);
-        $this->shop->save();
+      unset($shops[$shopIndex]);
+      $shops = array_values($shops);
+      $this->shop->setAll($shops);
+      $this->shop->save();
     }
-}
-
+  }
 }
